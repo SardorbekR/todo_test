@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:todotest/model/task.dart';
+import 'package:todotest/service/timer.dart';
 
 class TaskList extends StatelessWidget {
   const TaskList({
@@ -13,11 +16,24 @@ class TaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_scrollController.hasClients) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.ease,
+        );
+      });
+    }
+
     return ListView.builder(
+      addAutomaticKeepAlives: true,
       controller: _scrollController,
       shrinkWrap: true,
       itemCount: tasks.length,
       itemBuilder: (BuildContext context, int index) {
+        var currentElement = tasks.elementAt(index);
+
         return Container(
           margin: EdgeInsets.symmetric(
               horizontal: 10.0, vertical: index == tasks.length ? 30 : 5),
@@ -30,15 +46,19 @@ class TaskList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                tasks.elementAt(index).taskTitle,
+                currentElement.taskTitle,
                 style: TextStyle(
                   fontSize: 18.0,
                 ),
               ),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Text(tasks.elementAt(index).timeLeft,
-                    style: TextStyle(fontSize: 18.0)),
+                child: currentElement.withTime
+                    ? ClockWidget(
+                        currentElement.hour,
+                        currentElement.minute,
+                      )
+                    : Text(currentElement.withoutTime),
               ),
             ],
           ),

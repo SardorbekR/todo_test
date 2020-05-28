@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:timer_builder/timer_builder.dart';
 import 'package:todotest/model/task.dart';
 import 'package:todotest/widgets/appBar.dart';
 import 'package:todotest/widgets/task_list.dart';
@@ -12,8 +14,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Task> tasks = List();
-  int taskCount = 0;
+
   String userInput = "";
+  int taskCount = 0;
   String data = "";
 
   ScrollController _scrollController = new ScrollController();
@@ -21,15 +24,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    if (_scrollController.hasClients) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 100),
-          curve: Curves.ease,
-        );
-      });
-    }
+
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -118,67 +113,64 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          IgnorePointer(
-            ignoring: userInput.isEmpty,
-            child: MaterialButton(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onPressed: () {
-                var str = userInput;
-                var parts = str.split(' ');
-                var prefix = parts[0].trim();
+          MaterialButton(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onPressed: () {
+              var parts = userInput.split(' ');
+              var prefix = parts[0].trim();
 
-                RegExp regExp =
-                    new RegExp(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$');
+              RegExp regExp = new RegExp(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$');
+
+              if (regExp.stringMatch(prefix) != null) {
+                String matches = regExp.stringMatch(prefix).toString();
+
+                var hour, minute;
+
+                if (identical(matches[1]?.trim(), ':')) {
+                  hour = int.parse("${matches[0]?.trim()}");
+                  minute =
+                      int.parse("${matches[2].trim()}${matches[3]?.trim()}");
+                } else {
+                  hour =
+                      int.parse("${matches[0]?.trim()}${matches[1]?.trim()}");
+                  minute =
+                      int.parse("${matches[3].trim()}${matches[4]?.trim()}");
+                }
+
+                assert(hour is int);
+                assert(minute is int);
 
                 setState(() {
-                  if (regExp.stringMatch(prefix) != null) {
-                    String matches = regExp.stringMatch(prefix).toString();
-                    tasks.add(Task(userInput, matches));
-                    var a, b;
-
-                    if (identical(matches[1]?.trim(), ':')) {
-                      a = int.parse("${matches[0]?.trim()}");
-                      assert(a is int);
-                      b = int.parse(
-                          "${matches[2].trim()}${matches[3]?.trim()}");
-                      assert(b is int);
-                      taskCount = tasks.length;
-
-                      print("$a\n");
-                      print(b);
-                    } else {
-                      a = int.parse(
-                          "${matches[0]?.trim()}${matches[1]?.trim()}");
-                      assert(a is int);
-                      b = int.parse(
-                          "${matches[3].trim()}${matches[4]?.trim()}");
-                      assert(b is int);
-                      taskCount = tasks.length;
-                      print("$a\n");
-                      print(b);
-                    }
-                  } else {
-                    setState(() {
-                      tasks.add(Task(userInput, "Без времени"));
-                    });
-                  }
+                  tasks.add(Task(userInput, true, "", hour, minute));
+                  taskCount = tasks.length;
                 });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 11.0, horizontal: 18.0),
-                decoration: BoxDecoration(
-                    color: Color(0xFF2E5BFF), shape: BoxShape.circle),
-                child: Icon(
-                  Icons.arrow_upward,
-                  color: Colors.white,
-                ),
+              } else {
+                setState(() {
+                  if (userInput.isNotEmpty)
+                    tasks.add(Task(userInput, false, "Без времени"));
+                  taskCount = tasks.length;
+                });
+              }
+            },
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 11.0, horizontal: 18.0),
+              decoration: BoxDecoration(
+                  color: Color(0xFF2E5BFF), shape: BoxShape.circle),
+              child: Icon(
+                Icons.arrow_upward,
+                color: Colors.white,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 }
