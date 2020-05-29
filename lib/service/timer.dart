@@ -44,8 +44,14 @@ class ClockWidget extends StatelessWidget {
       }
 
       return isTaskFinished
-          ? Text("Время вышло!")
-          : Text("$h ч. $m мин. $s сек осталось");
+          ? Text(
+              "Время вышло!",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )
+          : Text(
+              "$h ч. $m мин. $s сек осталось",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            );
     });
   }
 }

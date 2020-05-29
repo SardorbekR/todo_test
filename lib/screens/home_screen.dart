@@ -42,6 +42,9 @@ class _HomePageState extends State<HomePage> {
                         child: TaskList(
                             scrollController: _scrollController, tasks: tasks),
                       ),
+                      Divider(
+                        color: Colors.black,
+                      ),
                       SizedBox(
                         height: 120,
                         child: Text(
@@ -49,7 +52,7 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
-                              fontSize: 18.0),
+                              fontSize: 20.0),
                         ),
                       ),
                     ],

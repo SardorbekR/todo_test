@@ -26,7 +26,10 @@ class TaskList extends StatelessWidget {
       });
     }
 
-    return ListView.builder(
+    return ListView.separated(
+      separatorBuilder: (context, index) => Divider(
+        color: Colors.black,
+      ),
       addAutomaticKeepAlives: true,
       controller: _scrollController,
       shrinkWrap: true,
@@ -36,18 +39,15 @@ class TaskList extends StatelessWidget {
         return Container(
           margin: EdgeInsets.symmetric(
               horizontal: 10.0, vertical: index == tasks.length ? 30 : 5),
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: Color(0xFFf1e3cb),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          padding: const EdgeInsets.all(2.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
                 currentElement.taskTitle,
                 style: TextStyle(
-                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
                 ),
               ),
               Align(
