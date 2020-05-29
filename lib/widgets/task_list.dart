@@ -33,7 +33,6 @@ class TaskList extends StatelessWidget {
       itemCount: tasks.length,
       itemBuilder: (BuildContext context, int index) {
         var currentElement = tasks.elementAt(index);
-
         return Container(
           margin: EdgeInsets.symmetric(
               horizontal: 10.0, vertical: index == tasks.length ? 30 : 5),
@@ -53,12 +52,14 @@ class TaskList extends StatelessWidget {
               ),
               Align(
                 alignment: Alignment.bottomRight,
-                child: currentElement.withTime
+                child: currentElement.withDeadline
                     ? ClockWidget(
                         currentElement.hour,
                         currentElement.minute,
+                        index,
+                        tasks,
                       )
-                    : Text(currentElement.withoutTime),
+                    : Text(currentElement.withoutDeadline),
               ),
             ],
           ),

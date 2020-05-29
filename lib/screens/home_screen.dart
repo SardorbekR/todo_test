@@ -1,7 +1,4 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:timer_builder/timer_builder.dart';
 import 'package:todotest/model/task.dart';
 import 'package:todotest/widgets/appBar.dart';
 import 'package:todotest/widgets/task_list.dart';
@@ -13,13 +10,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _textController = new TextEditingController();
+  ScrollController _scrollController = new ScrollController();
+  DateTime now = DateTime.now();
   List<Task> tasks = List();
-
   String userInput = "";
   int taskCount = 0;
-  String data = "";
-
-  ScrollController _scrollController = new ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +88,8 @@ class _HomePageState extends State<HomePage> {
           Flexible(
             child: SizedBox(
               height: 45,
-              child: TextFormField(
+              child: TextField(
+                controller: _textController,
                 decoration: InputDecoration(
                   contentPadding:
                       EdgeInsets.symmetric(vertical: 1.0, horizontal: 10.0),
@@ -108,51 +105,87 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 onChanged: (value) {
-                  userInput = value;
+                  setState(() {
+                    userInput = value;
+                  });
                 },
               ),
             ),
           ),
-          MaterialButton(
+          FlatButton(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onPressed: () {
-              var parts = userInput.split(' ');
-              var prefix = parts[0].trim();
+            color: Colors.white,
+            onPressed: userInput.isNotEmpty
+                ? () {
+                    setState(() {
+                      var parts = userInput.split(' ');
+                      var prefix = parts[0].trim();
 
-              RegExp regExp = new RegExp(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$');
+                      RegExp regExp =
+                          new RegExp(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$');
 
-              if (regExp.stringMatch(prefix) != null) {
-                String matches = regExp.stringMatch(prefix).toString();
+                      if (regExp.stringMatch(prefix) != null) {
+                        String matches = regExp.stringMatch(prefix).toString();
 
-                var hour, minute;
+                        var hour, minute;
 
-                if (identical(matches[1]?.trim(), ':')) {
-                  hour = int.parse("${matches[0]?.trim()}");
-                  minute =
-                      int.parse("${matches[2].trim()}${matches[3]?.trim()}");
-                } else {
-                  hour =
-                      int.parse("${matches[0]?.trim()}${matches[1]?.trim()}");
-                  minute =
-                      int.parse("${matches[3].trim()}${matches[4]?.trim()}");
-                }
+                        if (identical(matches[1]?.trim(), ':')) {
+                          hour = int.parse("${matches[0]?.trim()}");
+                          minute = int.parse(
+                              "${matches[2].trim()}${matches[3]?.trim()}");
+                        } else {
+                          hour = int.parse(
+                              "${matches[0]?.trim()}${matches[1]?.trim()}");
+                          minute = int.parse(
+                              "${matches[3].trim()}${matches[4]?.trim()}");
+                        }
 
-                assert(hour is int);
-                assert(minute is int);
+                        assert(hour is int);
+                        assert(minute is int);
+                        Duration timeLeft =
+                            DateTime(now.year, now.month, now.day, hour, minute)
+                                .difference(now);
+                        if (timeLeft.inMilliseconds < 0)
+                          timeLeft = DateTime(
+                                  now.year, now.month, now.day, hour, minute)
+                              .difference(
+                                  now.subtract(Duration(seconds: 86400)));
+                        setState(() {
+                          tasks.add(Task(
+                              taskTitle: userInput,
+                              withDeadline: true,
+                              hour: hour,
+                              minute: minute,
+                              sortingIndex: timeLeft.inMilliseconds));
 
-                setState(() {
-                  tasks.add(Task(userInput, true, "", hour, minute));
-                  taskCount = tasks.length;
-                });
-              } else {
-                setState(() {
-                  if (userInput.isNotEmpty)
-                    tasks.add(Task(userInput, false, "Без времени"));
-                  taskCount = tasks.length;
-                });
-              }
-            },
+                          taskCount = tasks.length;
+
+                          if (tasks.length > 0)
+                            tasks.sort((a, b) =>
+                                a.sortingIndex.compareTo(b.sortingIndex));
+                        });
+                      } else {
+                        setState(() {
+                          if (userInput.isNotEmpty)
+                            tasks.add(Task(
+                              taskTitle: userInput,
+                              withDeadline: false,
+                              withoutDeadline: "Без времени",
+                              sortingIndex:
+                                  -DateTime.now().millisecondsSinceEpoch,
+                            ));
+                          taskCount = tasks.length;
+                          if (tasks.length > 0)
+                            tasks.sort((a, b) =>
+                                a.sortingIndex.compareTo(b.sortingIndex));
+                        });
+                      }
+                    });
+                    _textController.clear();
+                    userInput = "";
+                  }
+                : null,
             child: Container(
               padding:
                   const EdgeInsets.symmetric(vertical: 11.0, horizontal: 18.0),
@@ -170,7 +203,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
   }
 }

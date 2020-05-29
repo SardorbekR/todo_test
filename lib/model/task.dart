@@ -1,10 +1,16 @@
+import 'package:flutter/material.dart';
+
 class Task {
-  String _taskTitle, withoutTime;
+  String taskTitle, withoutDeadline;
   int hour, minute;
-  bool withTime;
+  bool withDeadline;
+  int sortingIndex = -1;
 
-  Task(this._taskTitle, this.withTime,
-      [this.withoutTime, this.hour, this.minute]);
-
-  String get taskTitle => _taskTitle;
+  Task(
+      {@required this.taskTitle,
+      @required this.withDeadline,
+      this.withoutDeadline,
+      this.hour,
+      this.minute,
+      this.sortingIndex});
 }
