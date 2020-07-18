@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:todotest/model/task.dart';
-import 'package:todotest/service/timer.dart';
+import 'package:todotest/widgets/timer.dart';
 
 class TaskList extends StatelessWidget {
   const TaskList({
